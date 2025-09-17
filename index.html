@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capacity Check</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .date {
+            width: 300px;
+            height: 25px;
+        }
+
+        .main {
+            margin-top: 10px;
+        }
+
+        div.result {
+            margin-bottom: 2px; 
+        }
+
+        span.result {
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <input type="text" name="date" id="date" class="date" placeholder="Select date..."> 
+    <div class="main">
+        <div class="result booked">Booked: <span class="result booked"></span></div>
+        <div class="result max">Max: <span class="result max"></span></div>
+        <div class="result available">Available: <span class="result available"></span></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        const $bookedSpan = document.querySelector('span.booked');
+        const $maxSpan = document.querySelector('span.max');
+        const $availableSpan = document.querySelector('span.available');
+        const $el = document.querySelector('.date');
+        const fp = flatpickr($el, {
+            mode: 'range',
+            altInput: true,
+            enableTime: false,
+            altFormat: 'D M j',
+            dateFormat: 'Y-m-d',
+            minDate: 'today',
+            onClose: (selectedDates, dateStr, instance) => {
+                checkForAvailability(dateStr, capacityJSON);
+            },
+        });
+      
+        const capacityJSON = '{"capacity":{"2025-09-18":{"booked":12,"max":16,"available":4},"2025-09-19":{"booked":16,"max":16,"available":0},"2025-09-20":{"booked":9,"max":16,"available":7}}}';
+        function checkForAvailability(dateStr, capacityJSON) {
+            const startDate = dateStr.split(/\s+to\s+/)?.[0];
+            if (!startDate) return;
+            const capacityObj = JSON.parse(capacityJSON);
+            const { capacity } = capacityObj;
+            
+            if (!capacity[startDate]) {
+                updateUI(); 
+                return;
+            }   
+            
+            updateUI(capacity[startDate]); 
+
+            function updateUI({booked='not set', max='not set', available='not set'}={}) {
+                $bookedSpan.textContent = booked;
+                $maxSpan.textContent = max;
+                $availableSpan.textContent = available;
+            }
+        }
+    </script>
+</body>
+</html> 
